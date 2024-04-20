@@ -1,10 +1,16 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const path = 'cells.csv';
+const readLine = require('readline');
 
+// Create an interface for reading input from the console
+const readline = readLine.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 class Cell {
-  
+
     constructor (oem, model, launchAnnounced, launchStatus, bodyDimensions, bodyWeight, bodySim, displayType, displaySize, displayResolution, featuresSensors, platformOS) {
         this.oem = this.parseString(oem);
         this.model = this.parseString(model);
@@ -27,16 +33,16 @@ class Cell {
     set model(model) {
         this._model = model;
     }
-    set launchAnnounced(launchAnnounced) {   
+    set launchAnnounced(launchAnnounced) {
         this._launchAnnounced = launchAnnounced;
     }
-    set launchStatus(launchStatus) {    
+    set launchStatus(launchStatus) {
         this._launchStatus = launchStatus;
     }
-    set bodyDimensions(bodyDimensions) {    
+    set bodyDimensions(bodyDimensions) {
         this._bodyDimensions = bodyDimensions;
-    }   
-    set bodyWeight(bodyWeight) {    
+    }
+    set bodyWeight(bodyWeight) {
         this._bodyWeight = bodyWeight;
     }
     set bodySim(bodySim) {
@@ -51,7 +57,7 @@ class Cell {
     set displayResolution(displayResolution) {
         this._displayResolution = displayResolution;
     }
-    set featuresSensors(featuresSensors) { 
+    set featuresSensors(featuresSensors) {
         this._featuresSensors = featuresSensors;
     }
     set platformOS(platformOS) {
@@ -62,7 +68,7 @@ class Cell {
     get oem() {
         return this._oem;
     }
-    get model() {     
+    get model() {
         return this._model;
     }
     get launchAnnounced() {
@@ -105,12 +111,12 @@ class Cell {
     }
 
     parseWeight(weightStr) {
-    if (!weightStr || weightStr === '' || weightStr === '-') {
-        return null;
-    }
+        if (!weightStr || weightStr === '' || weightStr === '-') {
+            return null;
+        }
         const match = weightStr.match(/^\d+/);  // Regular expression to find the leading integer
-        
-    return match ? parseFloat(match[0]) : null;  // Parse the number as float
+
+        return match ? parseFloat(match[0]) : null;  // Parse the number as float
     }
 
     parseYear(yearStr) {
@@ -172,6 +178,10 @@ class Cell {
     }
 
     //Question 2
+    toString() {
+        return `---> OEM: ${this.oem}, Model: ${this.model}`;
+
+    }
     static phonesAnnouncedInOneYearReleasedInAnother(cellMap) {
         const mismatchedYears = [];
 
@@ -180,14 +190,14 @@ class Cell {
             const releasedYear = cell.parseYear(cell.launchStatus);
 
             if (announcedYear && releasedYear && announcedYear !== releasedYear) {
-                mismatchedYears.push({ oem: cell.oem, model: cell.model });
+                mismatchedYears.push(cell.toString());
             }
 
         });
 
         //const out = console.log(mismatchedYears);
 
-        return mismatchedYears;
+        return mismatchedYears.join('\n');
     }
 
     //Question 3
@@ -233,9 +243,99 @@ class Cell {
         return maxYear;
     }
 
+    //Remaining 3 methods
+    //Method to sort the phones by launch year
+    static sortPhonesByLaunchYear(cellMap) {
+        const phones = [];
 
+        // Collect all phones into the 'phones' array
+        cellMap.forEach((cell) => {
+            phones.push(cell);
+        });
+
+        // Sort the phones by launch year
+        const sortedPhones = phones.sort((a, b) => {
+            const yearA = a.parseYear(a.launchAnnounced);
+            const yearB = b.parseYear(b.launchAnnounced);
+            return yearA - yearB;
+        });
+
+        return sortedPhones;
+    }
+
+    // Method to print details of a specific cell based on its number
+    static printCellDetailsByNumber(cellMap) {
+
+        // Prompt user to input the cell number
+        readline.question('Enter the cell number you want to see: ', (answer) => {
+            const cellNumber = parseInt(answer);
+
+            if (isNaN(cellNumber) || cellNumber < 1 || cellNumber > cellMap.size) {
+                console.log('\nInvalid cell number.');
+            } else {
+                const selectedCell = cellMap.get(cellNumber);
+
+                console.log('Selected Cell Details -->\n');
+
+                console.log(`OEM: ${selectedCell.oem}`);
+                console.log(`Model: ${selectedCell.model}`);
+                console.log(`Launch Announced: ${selectedCell.launchAnnounced}`);
+                console.log(`Launch Status: ${selectedCell.launchStatus}`);
+                console.log(`Body Dimensions: ${selectedCell.bodyDimensions}`);
+                console.log(`Body Weight: ${selectedCell.bodyWeight}`);
+                console.log(`Body Sim: ${selectedCell.bodySim}`);
+                console.log(`Display Type: ${selectedCell.displayType}`);
+                console.log(`Display Size: ${selectedCell.displaySize}`);
+                console.log(`Display Resolution: ${selectedCell.displayResolution}`);
+                console.log(`Features Sensors: ${selectedCell.featuresSensors}`);
+                console.log(`Platform OS: ${selectedCell.platformOS}`);
+            }
+
+            readline.close();
+        });
+    }
 }
 
+
+function methodOptions() {
+
+    readline.question('\nChoose which method you would like to see -->\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. TBD1\n 4. quit: ', (action) => {
+        switch (action.trim().toLowerCase()) {
+            case '1':
+                //cell.sortPhonesByLaunchYear(cellMap);
+                // Call the method and store the sorted phones
+                const sortedPhones = Cell.sortPhonesByLaunchYear(cellMap);
+
+                // Check if sortedPhones is not undefined
+                if (sortedPhones) {
+                    // Iterate over the sorted phones and print their details
+                    sortedPhones.forEach((phone, index) => {
+                        console.log(`${index + 1}: \n Model-> ${phone.model} \n Launch Year-> ${phone.launchAnnounced}`);
+                    });
+                } else {
+                    console.log("No phones to display.");
+                }
+
+                methodOptions();  // Return to the main menu after sorting
+                break;
+            case '2':
+                Cell.printCellDetailsByNumber(cellMap);
+
+                methodOptions();  // Return to the main menu after deleting
+                break;
+            case '3':
+                //listUniqueValues(cells);
+                methodOptions()();  // Return to the main menu after listing
+                break;
+            case '4':
+                readline.close();
+                break;
+            default:
+                console.log('Invalid option');
+                methodOptions()();  // Recall the menu until a valid option or 'exit' is chosen
+        }
+    });
+}
 
 
 // Create a parser for the csv file
@@ -273,6 +373,8 @@ fs.createReadStream(path).pipe(parser).on('data', (data) => {
     console.log("\n2. Phones announced in one year and released in another:\n", Cell.phonesAnnouncedInOneYearReleasedInAnother(cellMap));
     console.log("\n3. Number of phones with only one feature sensor:", Cell.countPhonesWithOneFeatureSensor(cellMap));
     console.log("\n4. Year with the most phones launched:", Cell.yearWithMostPhonesLaunched(cellMap));
+
+    methodOptions();
 
 }).on('error', (err) => {
     console.log("Error occured while reading the file");
