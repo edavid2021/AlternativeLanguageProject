@@ -299,7 +299,7 @@ class Cell {
 
 function methodOptions() {
 
-    readline.question('\nChoose which method you would like to see -->\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. TBD1\n 4. quit: ', (action) => {
+    readline.question('\nChoose which method you would like to see\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. TBD1\n 4. quit: ', (action) => {
         switch (action.trim().toLowerCase()) {
             case '1':
                 //cell.sortPhonesByLaunchYear(cellMap);
@@ -331,8 +331,8 @@ function methodOptions() {
                 readline.close();
                 break;
             default:
-                console.log('Invalid option');
-                methodOptions()();  // Recall the menu until a valid option or 'exit' is chosen
+                console.log('Invalid option. Select 1-4.');
+                methodOptions();  // Recall the menu until a valid option or 'exit' is chosen
         }
     });
 }
