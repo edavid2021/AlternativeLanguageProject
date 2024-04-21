@@ -12,4 +12,4 @@ Subprograms, which are known as functions or methods in JavaScript, are importan
 * **FS** (File System): Part of Node.js, it was essential for tasks such as reading CSV data from files and simplifying file manipulation operations within the application.
 * **RegExp**: With JavaScript's built-in regular expression support, this made it possible to search for patterns and extract specific data from strings. It was useful for tasks like parsing and verifying data, which improved the program's data processing capabilities.
 
-![1713730253327](1713730253327.png)
+![1713730253327](/image/1713730253327.png)
