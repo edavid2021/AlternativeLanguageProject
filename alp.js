@@ -116,9 +116,9 @@ class Cell {
         if (!bodyWeight || bodyWeight === '' || bodyWeight === '-') {
             return null;
         }
-        const match = bodyWeight.match(/^\d+/);  // Regular expression to find the leading integer
+        const match = bodyWeight.match(/^\d+/);  
 
-        return match ? parseFloat(match[0]) : null;  // Parse the number as float
+        return match ? parseFloat(match[0]) : null;
     }
 
     parseYear(yearStr) {
@@ -169,13 +169,13 @@ class Cell {
         }
     }
 
-
-
-
-
     //Readme Questions
-
-    //Question 1
+    /**
+     * Question 1
+     * Returns the OEM with the highest average body weight of its phones.
+     * @param {*} cellsMap 
+     * @returns 
+     */
     static highestAverageBodyWeight(cellsMap) {
         const weightOEM = new Map();
         const countByOEM = new Map();
@@ -220,11 +220,22 @@ class Cell {
         return highestOEM;
     }
 
-    //Question 2
+
+    /**
+     * Question 2
+     * Returns a string representation of the cell phone.
+     * @returns {string} The string representation of the cell phone.
+     */
     toString() {
         return `\n     ${index++}. OEM: ${this.oem}\n        Model: ${this.model}`;
 
     }
+    /**
+     * Question 2
+     * Returns a string representation of the cell phones that were announced in one year and released in another.
+     * @param {*} cellMap 
+     * @returns 
+     */
     static phonesAnnouncedInOneYearReleasedInAnother(cellMap) {
         const mismatchedYears = [];
 
@@ -238,19 +249,17 @@ class Cell {
                 mismatchedYears.push(cell.toString());
             }
 
-            //console.log(cell.toString());
-            //console.log(announcedYear);
-            //console.log(releasedYear);
         });
-
-        //console.log(mismatchedYears);
-
-        //const out = console.log(mismatchedYears);
 
         return mismatchedYears.join('\n');
     }
 
-    //Question 3
+    /**
+     * Question 3
+     * Returns the number of phones with only one feature sensor.
+     * @param {*} cellMap 
+     * @returns 
+     */
     static countPhonesWithOneFeatureSensor(cellMap) {
         let count = 0;
         cellMap.forEach((cell) => {
@@ -264,7 +273,12 @@ class Cell {
         return count;
     }
 
-    //Question 4
+    /**
+     * Question 4
+     * Returns the year with the most phones launched.
+     * @param {*} cellMap 
+     * @returns 
+     */
     static yearWithMostPhonesLaunched(cellMap) {
         let yearCounts = new Map();
 
@@ -294,7 +308,12 @@ class Cell {
     }
 
     //Remaining 3 methods
-    //Method to sort the phones by launch year
+
+    /**
+     * Sorts the phones by launch year.
+     * @param {*} cellMap 
+     * @returns 
+     */
     static sortPhonesByLaunchYear(cellMap) {
         const phones = [];
 
@@ -313,7 +332,11 @@ class Cell {
         return sortedPhones;
     }
 
-    // Method to print details of a specific cell based on its number
+    /**
+     * Prints the details of a cell the user chooses.
+     * @param {*} cellNumber
+     * @param {*} cellMap
+     */
     static printCellDetailsByNumber(cellMap) {
 
         // Prompt user to input the cell number
@@ -346,6 +369,10 @@ class Cell {
     }
 
 
+    /**
+     * Lists the phones that have been cancelled.
+     * @param {*} cells
+     */
     static CancelledPhones(cells) {
         const Cancelled = [];
 
@@ -366,7 +393,15 @@ class Cell {
 
 }
 
-
+/**
+ * Function to display the options for the user to choose from.
+ * The user can choose to sort the phones by year, select a phone to view its details, list the cancelled phones, or quit the program.
+ * The function is called recursively until the user chooses to quit.
+ * @param {*} cellMap
+ * @param {*} readline
+ * @param {*} methodOptions
+ * @param {*} Cell
+ */
 function methodOptions() {
 
     readline.question('\nChoose which method you would like to see\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. List Cancelled Phones\n 4. quit: ', (action) => {
@@ -390,7 +425,7 @@ function methodOptions() {
 
             case '2':
                 Cell.printCellDetailsByNumber(cellMap);
-  // Return to the main menu after deleting
+
                 break;
 
             case '3':
@@ -410,7 +445,6 @@ function methodOptions() {
     });
 }
 
-
 // Create a parser for the csv file
 const parser = csv({
     delimiter: ',',
@@ -429,11 +463,13 @@ const parser = csv({
 var cellMap = new Map();
 var ctr = 1;
 
+// Read the file and parse the data
 fs.createReadStream(path).pipe(parser).on('data', (data) => {
     var cell = new Cell(data.oem, data.model, data.launch_announced, data.launch_status, data.body_dimensions, data.body_weight, data.body_sim, data.display_type, data.display_size, data.display_resolution, data.features_sensors, data.platform_os);
     cellMap.set(ctr, cell);
     ctr++;
 
+    //this is the data from the csv file
 }).on('end', () => {
     cellMap.forEach((value, key) => {
         console.log(key, value);
