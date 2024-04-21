@@ -317,7 +317,7 @@ class Cell {
     static printCellDetailsByNumber(cellMap) {
 
         // Prompt user to input the cell number
-        readline.question('Enter the cell number you want to see: ', (answer) => {
+        readline.question('\nEnter the cell number you want to see: ', (answer) => {
             const cellNumber = parseInt(answer);
 
             if (isNaN(cellNumber) || cellNumber < 1 || cellNumber > cellMap.size) {
@@ -341,21 +341,25 @@ class Cell {
                 console.log(`Platform OS: ${selectedCell.platformOS}`);
             }
 
-            readline.close();
+            methodOptions();
         });
     }
+
 
     static CancelledPhones(cells) {
         const Cancelled = [];
 
-        cells.forEach(cell => {
+        cells.forEach((cell, index) => {
             if (cell.launchStatus === 'Cancelled') {
-                Cancelled.push(cell);
+                Cancelled.push({ cellNumber: index + 1, cell });
             }
         });
 
-        console.log('Discontinued or Cancelled Phones -->\n');
-        console.log(Cancelled);
+        console.log('Cancelled Phones -->\n');
+        Cancelled.forEach(({ cellNumber, cell }) => {
+            console.log(`Cell Number: ${cellNumber}`);
+            console.log(Cancelled);
+        });
 
         return Cancelled;
     }
@@ -386,8 +390,7 @@ function methodOptions() {
 
             case '2':
                 Cell.printCellDetailsByNumber(cellMap);
-
-                methodOptions();  // Return to the main menu after deleting
+  // Return to the main menu after deleting
                 break;
 
             case '3':
