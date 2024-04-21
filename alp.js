@@ -9,21 +9,23 @@ const readline = readLine.createInterface({
     output: process.stdout
 });
 
+let index = 1;
+
 class Cell {
 
     constructor (oem, model, launchAnnounced, launchStatus, bodyDimensions, bodyWeight, bodySim, displayType, displaySize, displayResolution, featuresSensors, platformOS) {
         this.oem = this.parseString(oem);
         this.model = this.parseString(model);
-        this.launchAnnounced = launchAnnounced;
-        this.launchStatus = launchStatus;
+        this.launchAnnounced = this.parseLaunchAnnounced(launchAnnounced);
+        this.launchStatus = this.parseLaunchStatus(launchStatus);
         this.bodyDimensions = this.parseString(bodyDimensions);
         this.bodyWeight = bodyWeight;
         this.bodySim = bodySim;
         this.displayType = this.parseString(displayType);
-        this.displaySize = displaySize;
+        this.displaySize = this.parseDisplaySize(displaySize);
         this.displayResolution = this.parseString(displayResolution);
         this.featuresSensors = featuresSensors;
-        this.platformOS = platformOS;
+        this.platformOS = this.parsePlatformOS(platformOS);
     }
 
     //Setter functions
@@ -110,20 +112,61 @@ class Cell {
         return str.trim();
     }
 
-    parseWeight(weightStr) {
-        if (!weightStr || weightStr === '' || weightStr === '-') {
+    parseWeight(bodyWeight) {
+        if (!bodyWeight || bodyWeight === '' || bodyWeight === '-') {
             return null;
         }
-        const match = weightStr.match(/^\d+/);  // Regular expression to find the leading integer
+        const match = bodyWeight.match(/^\d+/);  // Regular expression to find the leading integer
 
         return match ? parseFloat(match[0]) : null;  // Parse the number as float
     }
 
     parseYear(yearStr) {
         const regex = /(\d{4})/; // Regular expression to match four-digit years
-        const match = yearStr.match(regex);
+        //const match = yearStr.match(regex);
 
-        return match ? parseInt(match[0]) : null; // Parse the matched year as an integer or return null if no match
+        //return match ? parseInt(match[0]) : null; // Parse the matched year as an integer or return null if no match
+    }
+
+    parseLaunchAnnounced(launchAnnounced) {
+        if (launchAnnounced) {
+            const yearMatch = launchAnnounced.match(/\d{4}/);
+            return yearMatch ? parseInt(yearMatch[0]) : null;
+        } else {
+            return null;
+        }
+    }
+
+    parseLaunchStatus(launchStatus) {
+        if (launchStatus) {
+            if (!isNaN(launchStatus) || launchStatus === 'Discontinued' || launchStatus === 'Cancelled') {
+                return launchStatus;
+            } else {
+                const yearMatch = launchStatus.match(/\d{4}/);
+                return yearMatch ? parseInt(yearMatch[0]) : null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    parseDisplaySize(displaySize) {
+        if (displaySize) {
+            const sizeMatch = displaySize.match(/(\d+(\.\d+)?)\s* inches/);
+            const parsedSize = parseFloat(sizeMatch[1]);
+            return `${parsedSize} inches`;
+        } else {
+            return null;
+        }
+    }
+
+    parsePlatformOS(platformOS) {
+        if (platformOS) {
+            const osMatch = platformOS.match(/^[^,]+/);
+            return osMatch ? osMatch[0] : null;
+        } else {
+            return null;
+        }
     }
 
 
@@ -179,21 +222,28 @@ class Cell {
 
     //Question 2
     toString() {
-        return `---> OEM: ${this.oem}, Model: ${this.model}`;
+        return `\n     ${index++}. OEM: ${this.oem}\n        Model: ${this.model}`;
 
     }
     static phonesAnnouncedInOneYearReleasedInAnother(cellMap) {
         const mismatchedYears = [];
 
-        cellMap.forEach((cell) => {
-            const announcedYear = cell.parseYear(cell.launchAnnounced);
-            const releasedYear = cell.parseYear(cell.launchStatus);
 
-            if (announcedYear && releasedYear && announcedYear !== releasedYear) {
+        cellMap.forEach((cell) => {
+            const announcedYear = (cell.launchAnnounced);
+            const releasedYear = (cell.launchStatus);
+
+            if (announcedYear && releasedYear && announcedYear !== releasedYear &&
+                releasedYear !== 'Discontinued' && releasedYear !== 'Cancelled') {
                 mismatchedYears.push(cell.toString());
             }
 
+            //console.log(cell.toString());
+            //console.log(announcedYear);
+            //console.log(releasedYear);
         });
+
+        //console.log(mismatchedYears);
 
         //const out = console.log(mismatchedYears);
 
@@ -220,7 +270,7 @@ class Cell {
 
         // Count the number of phones launched per year
         cellMap.forEach((cell) => {
-            const launchYear = cell.parseYear(cell.launchAnnounced); // Parse the launch year
+            const launchYear = (cell.launchAnnounced); // Parse the launch year
             if (launchYear && launchYear > 1999) { // Ensure the launch year is valid
                 if (yearCounts.has(launchYear)) {
                     yearCounts.set(launchYear, yearCounts.get(launchYear) + 1);
@@ -294,15 +344,30 @@ class Cell {
             readline.close();
         });
     }
+
+    static CancelledPhones(cells) {
+        const Cancelled = [];
+
+        cells.forEach(cell => {
+            if (cell.launchStatus === 'Cancelled') {
+                Cancelled.push(cell);
+            }
+        });
+
+        console.log('Discontinued or Cancelled Phones -->\n');
+        console.log(Cancelled);
+
+        return Cancelled;
+    }
+
 }
 
 
 function methodOptions() {
 
-    readline.question('\nChoose which method you would like to see\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. TBD1\n 4. quit: ', (action) => {
+    readline.question('\nChoose which method you would like to see\n Select 1-4:\n 1. Sort by Year\n 2. Select Phone \n 3. List Cancelled Phones\n 4. quit: ', (action) => {
         switch (action.trim().toLowerCase()) {
             case '1':
-                //cell.sortPhonesByLaunchYear(cellMap);
                 // Call the method and store the sorted phones
                 const sortedPhones = Cell.sortPhonesByLaunchYear(cellMap);
 
@@ -318,21 +383,26 @@ function methodOptions() {
 
                 methodOptions();  // Return to the main menu after sorting
                 break;
+
             case '2':
                 Cell.printCellDetailsByNumber(cellMap);
 
                 methodOptions();  // Return to the main menu after deleting
                 break;
+
             case '3':
-                //listUniqueValues(cells);
-                methodOptions()();  // Return to the main menu after listing
+                Cell.CancelledPhones(cellMap);
+
+                methodOptions();  // Return to the main menu after listing
                 break;
+
             case '4':
                 readline.close();
                 break;
+
             default:
                 console.log('Invalid option. Select 1-4.');
-                methodOptions();  // Recall the menu until a valid option or 'exit' is chosen
+                methodOptions();
         }
     });
 }
